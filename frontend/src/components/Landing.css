@@ -1,0 +1,133 @@
+/* Polices modernes et chaleureuses */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Nunito:wght@400;700&display=swap');
+
+.landing-container {
+  font-family: 'Inter', sans-serif;
+  color: #333;
+  padding: 2rem;
+  background: #f9fafb;
+}
+
+/* HERO */
+.hero-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.badge-pro {
+  font-size: 0.9rem;
+  color: #047857;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.hero-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 2.5rem;
+  color: #1E3A8A;
+}
+
+.hero-title span {
+  color: #047857;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 1rem auto;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  margin-top: 2rem;
+}
+
+.btn-pro-primary {
+  background: #1E3A8A;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  margin-right: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-pro-primary:hover {
+  background: #3749a3;
+}
+
+.btn-pro-secondary {
+  background: #047857;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-pro-secondary:hover {
+  background: #059669;
+}
+
+/* FEATURES */
+.features-grid-pro {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.feature-card-pro {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.feature-card-pro:hover {
+  transform: translateY(-5px);
+}
+
+.feature-label {
+  font-size: 0.9rem;
+  color: #047857;
+  font-weight: 600;
+}
+
+.feature-title {
+  font-size: 1.4rem;
+  color: #1E3A8A;
+  margin: 0.5rem 0;
+}
+
+.feature-desc {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* TECH STACK */
+.tech-stack-pro {
+  text-align: center;
+  margin-top: 3rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+.tech-logos {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.tech-logos code {
+  background: #e5e7eb;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-family: 'Nunito', sans-serif;
+}

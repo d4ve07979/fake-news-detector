@@ -1,0 +1,80 @@
+# ── Python ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+env/
+.venv/
+
+# ── Data (trop volumineux pour Git) ────────────────────────
+data/Fake.csv
+data/True.csv
+data/processed/
+data/*.zip
+data/*.png
+
+# ── Modèle BERT complet (trop lourd ~1 Go+) ────────────────
+models/bert-fakenews/
+models/bert-fakenews-ancien/
+models/bert-multilingual/
+models/bert-fakenews-v2/
+# Exception : garder uniquement config.json pour référence
+!models/.gitkeep
+
+# ── Base de données locale ──────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+backend/fakenews_dev.db
+
+# ── Logs ───────────────────────────────────────────────────
+logs/
+*.log
+runs/
+
+# ── Variables d'environnement (JAMAIS dans Git !) ──────────
+.env
+backend/.env
+!.env.example
+
+# ── Node / React ───────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+.npm/
+
+# ── Docker ─────────────────────────────────────────────────
+.docker/
+
+# ── IDE ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Jupyter ────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Tests ──────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+overfitting_test_results.json
+
+# ── Fichiers temporaires Windows ───────────────────────────
+*.tmp
+*.temp
+Thumbs.db
+desktop.ini
+
+# ── Dossiers parasites créés par erreur ────────────────────
+{backend/
