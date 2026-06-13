@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: fakenews
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: fakenews_db
+      POSTGRES_DB: fakenews
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -27,7 +27,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://fakenews:password@db:5432/fakenews_db
+      - DATABASE_URL=postgresql://fakenews:password@db:5432/fakenews
       - MODEL_PATH=/app/models/bert-fakenews
       - DEBUG=false
     volumes:

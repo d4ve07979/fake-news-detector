@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 import uvicorn
 import logging
+import asyncio
 
 from app.api.routes import router as api_router
 from app.core.config import settings
@@ -23,15 +24,22 @@ model_service: ModelService = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load model on startup, cleanup on shutdown."""
+    """Load model and create tables on startup, cleanup on shutdown."""
     global model_service
-    logger.info(" Loading BERT model...")
+    
+    # Create database tables (synchronous call wrapped in executor)
+    logger.info("Creating database tables...")
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, Base.metadata.create_all, engine)
+    logger.info("Database tables ready.")
+    
+    logger.info("Loading BERT model...")
     model_service = ModelService()
     model_service.load_model(settings.MODEL_PATH)
-    logger.info(" Model loaded successfully.")
+    logger.info("Model loaded successfully.")
     app.state.model_service = model_service
     yield
-    logger.info(" Shutting down...")
+    logger.info("Shutting down...")
 
 # ── App factory ────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -43,9 +51,14 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# CORS : autoriser les origines du frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://frontend:3000"],
+    allow_origins=[
+        "http://localhost",          # frontend servi par nginx
+        "http://localhost:3000",     # frontend en développement
+        "http://frontend:3000",      # communication interne Docker
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,10 +68,13 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
+    model_loaded = False
+    if model_service is not None:
+        model_loaded = getattr(model_service, "is_loaded", True)
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "model_loaded": model_service is not None and model_service.is_loaded,
+        "model_loaded": model_loaded,
         "model_version": settings.MODEL_VERSION,
     }
 
