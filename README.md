@@ -1,173 +1,249 @@
-# 🔍 Fake News Detector — Système de Détection de Fausses Informations
+# FakeDetect — Système de Détection de Fake News à Grande Échelle
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green)](https://fastapi.tiangolo.com)
-[![BERT](https://img.shields.io/badge/Model-BERT--base--uncased-orange)](https://huggingface.co)
-[![Docker](https://img.shields.io/badge/Docker-Compose-blue)](https://docker.com)
-[![F1 Score](https://img.shields.io/badge/F1%20Score-98.7%25-brightgreen)]()
+Projet académique L3 Informatique — Spécialité IA & Big Data
+Encadrant : Dr. Tchaye
 
-> Projet IA & Big Data — L3 Informatique, Spécialité IA & Big Data  
-> **Équipe :** KENKOU Dave (Data Engineer) · Membre 2 (ML Engineer) · Membre 3 (Dev Full-Stack)
-
----
-
-## 📋 Description
-
-Système complet de détection de fake news combinant :
-- **Big Data Pipeline** : Apache Spark pour le prétraitement distribué
-- **Modèle NLP** : BERT fine-tuné (F1 = 98.7% sur le dataset Fake & Real News)
-- **API REST** : FastAPI avec scoring temps réel
-- **Application Web** : React + TailwindCSS
-- **Base de données** : PostgreSQL (historique des prédictions)
-- **Déploiement** : Docker Compose (one-command deployment)
+[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green?logo=fastapi)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://reactjs.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docker.com)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-XLM--RoBERTa-yellow)](https://huggingface.co)
+[![Apache Spark](https://img.shields.io/badge/Apache-Spark-E25A1C?logo=apachespark)](https://spark.apache.org)
 
 ---
 
-## 🏗 Architecture du projet
+## Description
+
+FakeDetect est un système complet de détection automatique de fake news combinant :
+
+- **Big Data** : pipeline Apache Spark NLP traitant 44 898 articles
+- **NLP / IA** : modèle XLM-RoBERTa fine-tuné (F1 = 99,9% sur test set)
+- **Backend** : API REST FastAPI avec persistance SQLite/PostgreSQL
+- **Frontend** : Application React avec 6 pages (Analyser, Dashboard, Batch, Historique...)
+- **DevOps** : Déploiement Docker Compose en 4 services
+
+---
+
+## Architecture
 
 ```
-fake_news_detector/
+CSV Bruts --> Spark NLP --> Parquet --> BERT/XLM-RoBERTa --> FastAPI --> React App
+ Kaggle        Nettoyage    Big Data      Fine-tuning GPU       REST API    Interface
+44,898 art.    Anti-biais   Optimise      F1 = 99.9%            <500ms      6 pages
+```
+
+### Services Docker
+
+```
++---------------------------------------------+
+|            docker-compose.yml               |
+|  +----------+  +----------+  +----------+  |
+|  |  nginx   |  | frontend |  |   api    |  |
+|  |  :80     |  |  :3000   |  |  :8000   |  |
+|  +----------+  +----------+  +----------+  |
+|                              +----------+   |
+|                              |    db    |   |
+|                              |  :5432   |   |
+|                              +----------+   |
++---------------------------------------------+
+```
+
+---
+
+## Demarrage rapide
+
+### Prerequis
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installe et demarre
+- Modele entraine place dans `models/bert-fakenews/`
+
+### Lancement en une commande
+
+```bash
+git clone https://github.com/d4ve07979/fake-news-detector.git
+cd fake-news-detector
+docker-compose up --build
+```
+
+L'application est accessible sur **http://localhost**
+
+> Le dossier `models/bert-fakenews/` n'est pas inclus dans le repo (trop lourd ~1 Go).
+> Voir la section Modele pour l'obtenir.
+
+---
+
+## Developpement local (sans Docker)
+
+### Backend
+
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # Linux/Mac
+pip install -r requirements.txt
+
+# Creer la base de donnees
+python -c "from app.core.database import init_db; init_db()"
+
+# Lancer l'API
+uvicorn app.main:app --port 8000 --reload
+```
+
+API disponible sur http://localhost:8000
+Documentation Swagger sur http://localhost:8000/docs
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Interface disponible sur http://localhost:3000
+
+---
+
+## Modele
+
+Le modele XLM-RoBERTa fine-tune n'est pas inclus dans ce depot Git (taille ~1 Go).
+
+### Entrainer le modele (Google Colab recommande)
+
+```bash
+cd ml
+# Etape 1 — Pipeline Spark NLP
+python spark_pipeline.py
+
+# Etape 2 — Entrainement BERT v2 (XLM-RoBERTa multilingue)
+python train_bert_v2.py \
+    --model xlm-roberta-base \
+    --output ./bert-fakenews \
+    --fake_csv data/Fake.csv \
+    --real_csv data/True.csv
+```
+
+### Structure attendue du modele
+
+```
+models/
+└── bert-fakenews/
+    ├── config.json
+    ├── model.safetensors
+    ├── tokenizer.json
+    ├── tokenizer_config.json
+    └── training_args.bin
+```
+
+---
+
+
+
+## Structure du projet
+
+```
+fake-news-detector/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py              # Point d'entrée FastAPI
-│   │   ├── api/routes.py        # Endpoints REST
+│   │   ├── api/routes.py
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   └── database.py
 │   │   ├── services/
-│   │   │   └── model_service.py # Inférence BERT
-│   │   └── core/
-│   │       ├── config.py        # Configuration
-│   │       └── database.py      # PostgreSQL / SQLAlchemy
-│   ├── requirements.txt
-│   └── Dockerfile
+│   │   │   └── model_service.py
+│   │   └── main.py
+│   ├── Dockerfile
+│   └── requirements.txt
+│
 ├── frontend/
-│   └── src/
-│       ├── App.jsx
-│       └── components/
-│           ├── Analyzer.jsx     # Interface d'analyse
-│           ├── Dashboard.jsx    # Statistiques
-│           └── History.jsx      # Historique
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Analyzer.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── History.jsx
+│   │   │   ├── Batch.jsx
+│   │   │   ├── Landing.jsx
+│   │   │   └── About.jsx
+│   │   ├── App.jsx
+│   │   └── app.css
+│   ├── Dockerfile
+│   └── package.json
+│
 ├── ml/
-│   ├── spark_pipeline.py        # Pipeline Spark NLP
-│   ├── train_bert.py            # Fine-tuning BERT
-│   └── notebooks/               # EDA + expériences
+│   ├── spark_pipeline.py
+│   ├── train_bert_v2.py
+│   ├── test_overfitting.py
+│   └── evaluation/
+│       └── compare_models.py
+│
+├── models/
+│   └── .gitkeep
+│
 ├── docker/
 │   └── nginx.conf
+│
 ├── docker-compose.yml
+├── Makefile
 └── README.md
 ```
 
 ---
 
-## ⚡ Installation & Démarrage rapide
+## API Endpoints
 
-### Prérequis
-- Docker + Docker Compose
-- Python 3.11+ (pour le ML)
-- Node.js 18+ (pour le frontend en dev)
-- GPU recommandé pour l'entraînement (Google Colab possible)
+| Endpoint | Methode | Description |
+|----------|---------|-------------|
+| `/health` | GET | Statut de l'API et du modele |
+| `/api/v1/predict` | POST | Analyse d'un article unique |
+| `/api/v1/batch` | POST | Analyse de plusieurs articles |
+| `/api/v1/stats` | GET | Statistiques depuis la BDD |
+| `/api/v1/history` | GET | Historique pagine des predictions |
+| `/api/v1/history/{id}` | DELETE | Supprimer une prediction |
 
-### 1. Cloner le repository
+### Exemple de requete
+
 ```bash
-git clone https://github.com/VOTRE_USERNAME/fake-news-detector.git
-cd fake-news-detector
+curl -X POST http://localhost:8000/api/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Federal Reserve holds interest rates steady",
+    "text": "The Federal Reserve kept interest rates unchanged on Wednesday..."
+  }'
 ```
 
-### 2. Télécharger le dataset
-```bash
-# Via Kaggle CLI
-pip install kaggle
-kaggle datasets download -d clmentbisaillon/fake-and-real-news-dataset -p ./data
-cd data && unzip fake-and-real-news-dataset.zip
-```
+### Exemple de reponse
 
-### 3. Prétraitement Spark (optionnel — données déjà incluses)
-```bash
-pip install pyspark spark-nlp
-python ml/spark_pipeline.py
-```
-
-### 4. Entraîner le modèle (recommandé sur GPU)
-```bash
-pip install -r backend/requirements.txt
-python ml/train_bert.py --data_path ./data/processed --output ./models/bert-fakenews
-```
-
-### 5. Lancer l'application complète
-```bash
-docker-compose up --build
-```
-
-L'application est disponible sur :
-- **Frontend** : http://localhost:3000
-- **API Docs** : http://localhost:8000/docs
-- **API Health** : http://localhost:8000/health
-
----
-
-## 🔌 API Reference
-
-### POST /api/v1/predict
-Analyse un article et retourne la probabilité de fake news.
-
-**Request:**
 ```json
 {
-  "title": "Breaking: Major Discovery Shocks the World",
-  "text": "Scientists at a secret lab have discovered..."
+  "id": 1,
+  "label": "REAL",
+  "confidence": 0.9637,
+  "verdict": "INFORMATION CREDIBLE",
+  "fake_probability": 0.0363,
+  "real_probability": 0.9637,
+  "processing_time_ms": 312.5,
+  "top_keywords": ["Federal Reserve", "interest rates", "inflation"],
+  "timestamp": "2026-06-13T00:04:01"
 }
 ```
 
-**Response:**
-```json
-{
-  "label": "FAKE",
-  "confidence": 0.9731,
-  "verdict": "⚠️ FAUSSE INFORMATION",
-  "fake_probability": 0.9731,
-  "real_probability": 0.0269,
-  "processing_time_ms": 287.4,
-  "top_keywords": ["BREAKING", "secret"],
-  "timestamp": "2024-01-15T10:30:00"
-}
-```
+---
 
-### GET /api/v1/stats
-Statistiques globales du système.
+## Technologies utilisees
 
-### GET /api/v1/history?page=1&limit=20&label=FAKE
-Historique paginé des prédictions.
+| Categorie | Technologies |
+|-----------|-------------|
+| Big Data | Apache Spark 3.x, PySpark, Parquet |
+| ML / NLP | HuggingFace Transformers, BERT, XLM-RoBERTa, PyTorch |
+| Backend | FastAPI, SQLAlchemy, Uvicorn, Pydantic |
+| Base de donnees | SQLite (dev), PostgreSQL 15 (production) |
+| Frontend | React 18, Vite, Axios, Tailwind CSS |
+| DevOps | Docker, Docker Compose, Nginx |
+| Entrainement | Google Colab (GPU T4), HuggingFace Trainer |
 
 ---
 
-## 📊 Performances du modèle
+Projet academique — Licence 3 Informatique, IA & Big Data.
 
-| Modèle | Accuracy | F1 Score | AUC-ROC |
-|--------|----------|----------|---------|
-| TF-IDF + LogReg (baseline) | 94.2% | 94.2% | 0.981 |
-| BiLSTM + Word2Vec | 96.1% | 96.1% | 0.992 |
-| **BERT fine-tuned (final)** | **98.7%** | **98.7%** | **0.999** |
-
----
-
-## 🧪 Tests
-
-```bash
-cd backend
-pytest tests/ -v
-```
-
----
-
-## 👥 Équipe
-
-| Membre | Rôle | Contributions |
-|--------|------|---------------|
-| KENKOU Dave | Data Engineer | Spark pipeline, EDA, Kafka |
-| Membre 2 | ML Engineer | BERT fine-tuning, évaluation |
-| Membre 3 | Dev Full-Stack | FastAPI, React, Docker |
-
----
-
-## 📧 Contact
-
-Soumission : tchaye59@gmail.com  
-L3 Informatique — Spécialité IA & Big Data — 2024/2025
+github.com/d4ve07979/fake-news-detector
